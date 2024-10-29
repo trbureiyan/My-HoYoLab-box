@@ -11,8 +11,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: "Pip install"
-      - run: sudo apt-get update
-      - run: pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: "Update gist"
         env:
