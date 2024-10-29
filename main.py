@@ -1,5 +1,3 @@
-# @author https://github.com/jilliangmeehan
-
 import requests
 import os
 import json
@@ -36,30 +34,27 @@ def format_game_stats(game):
     game_id = game['game_id']
     game_name = game['game_name']
     level = game['level']
+
+    if game_id != 2:  # Genshin Impact
+        return None
     
     print(f"Formatting stats for {game_name}:")
     print(json.dumps(game, indent=2))
-    
+
     stats = {item['name']: item['value'] for item in game['data']}
-    
+
     def get_stat(keys):
         for key in keys:
             if key in stats:
                 return stats[key]
         return "N/A"
 
-    if game_id == 2:  # Genshin Impact
-        return f"🎮 {game_name}\n"\
-               f"⚔️ Lv.{level}\n"\
-               f"🕹️ Active Days: {get_stat(['Active Days', 'Days Active', '活跃天数'])}\n"\
-               f"🤝 Characters: {get_stat(['Characters', 'Characters Obtained', '获得角色数'])}\n"\
-               f"🏆 Achievements: {get_stat(['Achievements', 'Achievements Unlocked', '成就达成数'])}\n"\
-               f"🌟 Spiral Abyss: {get_stat(['Spiral Abyss', 'Spiral Abyss Progress', '深境螺旋'])}\n"
-    
-    else:  # Generic format for unknown games
-        return f"🎮 {game_name}\n"\
-               f"⚔️ Lv.{level}\n"\
-               + "\n".join(f"{key}: {value}" for key, value in stats.items())
+    return f"🎮 {game_name}\n"\
+           f"⚔️ Lv.{level}\n"\
+           f"🕹️ Active Days: {get_stat(['Active Days', 'Days Active', '活跃天数'])}\n"\
+           f"🤝 Characters: {get_stat(['Characters', 'Characters Obtained', '获得角色数'])}\n"\
+           f"🏆 Achievements: {get_stat(['Achievements', 'Achievements Unlocked', '成就达成数'])}\n"\
+           f"🌟 Spiral Abyss: {get_stat(['Spiral Abyss', 'Spiral Abyss Progress', '深境螺旋'])}\n"
 
 def update_gist(gh_api_url, gh_token, gist_id, hoyo_data):
     if not hoyo_data:
@@ -68,7 +63,13 @@ def update_gist(gh_api_url, gh_token, gist_id, hoyo_data):
 
     str_hoyo_data = ""
     for game in hoyo_data:
-        str_hoyo_data += format_game_stats(game) + "\n"
+        formatted_stats = format_game_stats(game)
+        if formatted_stats:  # Only add if it's Genshin Impact
+            str_hoyo_data += formatted_stats + "\n"
+
+    if not str_hoyo_data:
+        print("Error: No Genshin Impact data to update gist")
+        return
 
     data = {
         'description': '🎮 HoYoverse gameplay stats',
